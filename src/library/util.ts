@@ -1,5 +1,5 @@
 import middy from '@middy/core';
-import { MicroApplicationMessage } from './sharedTypes';
+import { MicroAppMessage } from './sharedTypes';
 
 /**
  * @description Attempt to JSON.parse input value. If parse fails, return original @param {any} v
@@ -237,7 +237,7 @@ export const findDuplicateMadsKeys = (mads: any) => {
 
 export const addToEventContext = (
   request: middy.Request,
-  message: MicroApplicationMessage,
+  message: MicroAppMessage,
   middlewareName: string,
   data: any
 ) => {
@@ -251,7 +251,7 @@ export const addToEventContext = (
 
 export const prepareMiddlewareDataForWorker = async (
   request: middy.Request,
-  message: MicroApplicationMessage
+  message: MicroAppMessage
 ) => {
   const messageId = message.msgAttribs.eventId;
   if (!request.internal[messageId]) {

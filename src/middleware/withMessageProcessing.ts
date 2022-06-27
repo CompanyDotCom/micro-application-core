@@ -13,9 +13,9 @@ import {
 } from '../library/queue';
 
 import {
-  HandledMicroApplicationMessage,
+  HandledMicroAppMessage,
   RawEvent,
-  MicroApplicationMessage,
+  MicroAppMessage,
   Options,
 } from '../library/sharedTypes';
 
@@ -105,7 +105,7 @@ const handleBulk = async (request: middy.Request, options: SettledOptions) => {
 };
 
 const sendToDlq = async (
-  message: MicroApplicationMessage,
+  message: MicroAppMessage,
   options: SettledOptions,
   error: Error | null
 ) => {
@@ -136,92 +136,86 @@ function isSqsEvent(obj: any): obj is SQSEvent {
 
 const withMessageProcessing = (
   opt: Options
-): middy.MiddlewareObj<RawEvent, [HandledMicroApplicationMessage]> => {
+): middy.MiddlewareObj<RawEvent, [HandledMicroAppMessage]> => {
   const middlewareName = 'withMessageProcessing';
   const options = { ...defaults, ...opt } as SettledOptions;
 
-  const sqsBefore: middy.MiddlewareFn<
-    RawEvent,
-    [HandledMicroApplicationMessage]
-  > = async (request): Promise<void> => {
-    if (options.debugMode) {
-      console.log('before', middlewareName);
-      console.log('TRIGGER EVENT:', request.event);
-    }
-    if (isScheduledEvent(request.event) && options.isBulk) {
-      await handleBulk(request, options);
-    } else if (isSqsEvent(request.event)) {
-      await handleSingle(request);
-    } else {
-      throw 'Bulk operations must be Scheduled Event Lambda Invocations, Single Operations must be SNS Event Lambda Invocations';
-    }
-  };
+  const sqsBefore: middy.MiddlewareFn<RawEvent, [HandledMicroAppMessage]> =
+    async (request): Promise<void> => {
+      if (options.debugMode) {
+        console.log('before', middlewareName);
+        console.log('TRIGGER EVENT:', request.event);
+      }
+      if (isScheduledEvent(request.event) && options.isBulk) {
+        await handleBulk(request, options);
+      } else if (isSqsEvent(request.event)) {
+        await handleSingle(request);
+      } else {
+        throw 'Bulk operations must be Scheduled Event Lambda Invocations, Single Operations must be SNS Event Lambda Invocations';
+      }
+    };
 
-  const sqsAfter: middy.MiddlewareFn<
-    RawEvent,
-    [HandledMicroApplicationMessage]
-  > = async (request): Promise<void> => {
-    if (options.debugMode) {
-      console.log('after', middlewareName);
-    }
-    const { AWS, region, account, service } = options;
+  const sqsAfter: middy.MiddlewareFn<RawEvent, [HandledMicroAppMessage]> =
+    async (request): Promise<void> => {
+      if (options.debugMode) {
+        console.log('after', middlewareName);
+      }
+      const { AWS, region, account, service } = options;
 
-    const handledMessages = request.response;
-    if (handledMessages) {
-      console.log(handledMessages.length, 'message(s) were processed');
-      await Promise.all(
-        handledMessages.map(async (message: HandledMicroApplicationMessage) => {
-          const { rcptHandle, msgAttribs, workerResp, msgBody } = message;
-          // Delete the message from the queue using the rcptHandle, if available.
-          if (typeof rcptHandle !== 'undefined') {
-            await deleteMsgFromQueue(
-              AWS,
-              region,
-              msgAttribs.eventType === 'transition'
-                ? `https://sqs.${region}.amazonaws.com/${account}/${service}-bulktq`
-                : `https://sqs.${region}.amazonaws.com/${account}/${service}-bulkfq`,
-              rcptHandle
-            );
-          }
-
-          if (workerResp.status && workerResp.status === 'fail') {
-            sendToDlq(message, options, workerResp.error);
-          }
-
-          // Publish the response SNS event
-          await es.publish(
-            AWS,
-            `arn:aws:sns:${region}:${account}:event-bus`,
-            {
-              ...msgBody,
-              inputPayload: msgBody.payload,
-              payload: workerResp.res,
-            },
-            {
-              ...msgAttribs,
-              status: getCompleteStatus(message),
-              eventId: uuid(),
-              emitter: service,
-            }
-          );
-        })
-      );
-    }
-  };
-
-  const onError: middy.MiddlewareFn<
-    RawEvent,
-    [HandledMicroApplicationMessage]
-  > = async (request): Promise<void> => {
-    if (request.response && request.response.length) {
       const handledMessages = request.response;
-      await Promise.all(
-        handledMessages.map(async (m) => {
-          await sendToDlq(m, options, request.error);
-        })
-      );
-    }
-  };
+      if (handledMessages) {
+        console.log(handledMessages.length, 'message(s) were processed');
+        await Promise.all(
+          handledMessages.map(async (message: HandledMicroAppMessage) => {
+            const { rcptHandle, msgAttribs, workerResp, msgBody } = message;
+            // Delete the message from the queue using the rcptHandle, if available.
+            if (typeof rcptHandle !== 'undefined') {
+              await deleteMsgFromQueue(
+                AWS,
+                region,
+                msgAttribs.eventType === 'transition'
+                  ? `https://sqs.${region}.amazonaws.com/${account}/${service}-bulktq`
+                  : `https://sqs.${region}.amazonaws.com/${account}/${service}-bulkfq`,
+                rcptHandle
+              );
+            }
+
+            if (workerResp.status && workerResp.status === 'fail') {
+              sendToDlq(message, options, workerResp.error);
+            }
+
+            // Publish the response SNS event
+            await es.publish(
+              AWS,
+              `arn:aws:sns:${region}:${account}:event-bus`,
+              {
+                ...msgBody,
+                inputPayload: msgBody.payload,
+                payload: workerResp.res,
+              },
+              {
+                ...msgAttribs,
+                status: getCompleteStatus(message),
+                eventId: uuid(),
+                emitter: service,
+              }
+            );
+          })
+        );
+      }
+    };
+
+  const onError: middy.MiddlewareFn<RawEvent, [HandledMicroAppMessage]> =
+    async (request): Promise<void> => {
+      if (request.response && request.response.length) {
+        const handledMessages = request.response;
+        await Promise.all(
+          handledMessages.map(async (m) => {
+            await sendToDlq(m, options, request.error);
+          })
+        );
+      }
+    };
 
   return {
     before: sqsBefore,

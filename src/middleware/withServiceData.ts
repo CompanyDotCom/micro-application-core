@@ -1,9 +1,9 @@
 import middy from '@middy/core';
 import _get from 'lodash/get';
 import {
-  HandledMicroApplicationMessage,
+  HandledMicroAppMessage,
   Options,
-  MicroApplicationMessage,
+  MicroAppMessage,
 } from '../library/sharedTypes';
 import {
   itemExists,
@@ -76,21 +76,18 @@ const defaults = {
 
 const withServiceData = (
   opts: Options
-): middy.MiddlewareObj<
-  [MicroApplicationMessage],
-  [HandledMicroApplicationMessage]
-> => {
+): middy.MiddlewareObj<[MicroAppMessage], [HandledMicroAppMessage]> => {
   const middlewareName = 'withServiceData';
   const options = { ...defaults, ...opts } as Options;
   const serviceDataBefore: middy.MiddlewareFn<
-    MicroApplicationMessage[],
-    HandledMicroApplicationMessage[]
+    MicroAppMessage[],
+    HandledMicroAppMessage[]
   > = async (request): Promise<void> => {
     if (options.debugMode) {
       console.log('before', middlewareName);
     }
     await Promise.all(
-      request.event.map(async (m: MicroApplicationMessage) => {
+      request.event.map(async (m: MicroAppMessage) => {
         const userId: string = _get(
           m,
           ['msgBody', 'context', 'user', 'userId'],
@@ -126,8 +123,8 @@ const withServiceData = (
   };
 
   const serviceDataAfter: middy.MiddlewareFn<
-    MicroApplicationMessage[],
-    HandledMicroApplicationMessage[]
+    MicroAppMessage[],
+    HandledMicroAppMessage[]
   > = async (request): Promise<void> => {
     if (options.debugMode) {
       console.log('after', middlewareName);
@@ -136,7 +133,7 @@ const withServiceData = (
     // set changes to serviceUserData/serviceAccountData
     if (request.response) {
       await Promise.all(
-        request.response.map(async (m: HandledMicroApplicationMessage) => {
+        request.response.map(async (m: HandledMicroAppMessage) => {
           const promises = [] as any[];
           const userId: string = _get(
             m,

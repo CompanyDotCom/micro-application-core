@@ -43,14 +43,13 @@ type WorkerResp = {
   [key: string]: any;
 };
 
-export interface MicroApplicationMessage {
+export interface MicroAppMessage {
   msgBody: MessageBody;
   msgAttribs: MessageAttributes;
   rcptHandle?: any;
 }
 
-export interface HandledMicroApplicationMessage
-  extends MicroApplicationMessage {
+export interface HandledMicroAppMessage extends MicroAppMessage {
   workerResp: WorkerResp;
 }
 
@@ -82,7 +81,7 @@ export type Options = {
   debugMode?: boolean;
 };
 
-export interface CoreMicroApplicationConfig {
+export interface CoreMicroAppConfig {
   eventType: 'fetch' | 'transition' | 'webhook';
   isBulk: boolean;
   region: string;
@@ -108,7 +107,7 @@ export type AllowableConfigKeys =
   | 'debugMode'
   | 'useMads';
 
-export type MicroApplicationWorkerInterface = {
+export type MicroAppWorkerInterface = {
   message: MessageBody;
   attributes: MessageAttributes;
   rcptHandle?: any;

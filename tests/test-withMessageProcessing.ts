@@ -18,11 +18,11 @@ const coreSettings = {
   eventType: 'fetch',
 } as Options;
 
-// return useMicroApplication(
+// return useMicroApp(
 //   AWS,
-//   { ...sharedMicroApplicationConfig, isBulk: false, eventType: 'fetch' },
+//   { ...sharedMicroAppConfig, isBulk: false, eventType: 'fetch' },
 //   fMsgHandler,
-//   determineMiddleware(microApplicationMiddleware, 'fetch', false),
+//   determineMiddleware(microAppMiddleware, 'fetch', false),
 // ).then((handler) => {
 //   console.log(event);
 //   console.log(handler);

@@ -1,7 +1,7 @@
 import middy from '@middy/core';
 import {
-  MicroApplicationMessage,
-  HandledMicroApplicationMessage,
+  MicroAppMessage,
+  HandledMicroAppMessage,
   Options,
 } from '../library/sharedTypes';
 
@@ -9,14 +9,11 @@ import { fetchRecordsByQuery } from '../library/dynamo';
 
 const createWithVendorConfig = (
   options: Options
-): middy.MiddlewareObj<
-  [MicroApplicationMessage],
-  [HandledMicroApplicationMessage]
-> => {
+): middy.MiddlewareObj<[MicroAppMessage], [HandledMicroAppMessage]> => {
   const middlewareName = 'withVendorConfig';
   const before: middy.MiddlewareFn<
-    [MicroApplicationMessage],
-    [HandledMicroApplicationMessage]
+    [MicroAppMessage],
+    [HandledMicroAppMessage]
   > = async (request): Promise<void> => {
     if (options.debugMode) {
       console.log('before', middlewareName);

@@ -80,7 +80,7 @@ const test = async (event: any) => {
   });
 };
 
-const sampleMicroApplicationMessages = [
+const sampleMicroAppMessages = [
   {
     msgBody: {
       payload: {},
@@ -126,7 +126,7 @@ const run = async () => {
 
   try {
     console.log('RUNNING GOOD EVENT');
-    await test(sampleMicroApplicationMessages);
+    await test(sampleMicroAppMessages);
   } catch (err) {
     console.log('This should not have erred', err);
   }

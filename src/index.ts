@@ -9,8 +9,8 @@ import withCrmData from './middleware/withCrmData';
 import withMads from './middleware/withMads';
 import withPrivacyScreen from './middleware/withPrivacyScreen';
 import {
-  CoreMicroApplicationConfig,
-  MicroApplicationMessage,
+  CoreMicroAppConfig,
+  MicroAppMessage,
   AllowableConfigKeys,
   Options,
 } from './library/sharedTypes';
@@ -20,21 +20,21 @@ import { handler as sDb } from './handlers/setupDatabase';
 
 const createTailoredOptions = (
   keys: Array<AllowableConfigKeys>,
-  microApplicationConfig: CoreMicroApplicationConfig,
+  microAppConfig: CoreMicroAppConfig,
   AWS?: any
 ): Options => {
   return keys.reduce(
     (opt, key) => ({
       ...opt,
-      [key]: microApplicationConfig[key],
+      [key]: microAppConfig[key],
     }),
     AWS ? { AWS } : {}
   );
 };
 
-export const useMicroApplication = (
+export const useMicroApp = (
   AWS: any,
-  microApplicationConfig: CoreMicroApplicationConfig,
+  microAppConfig: CoreMicroAppConfig,
   worker: (params: any) => any,
   additionalMiddleware: [(opt: Options) => middy.MiddlewareObj]
 ) => {
@@ -43,7 +43,7 @@ export const useMicroApplication = (
     console.log('Delegating processed messages to worker:');
     return Promise.all(
       // opportunity to adjust call signature of the worker to best suit this approach
-      event.map((m: MicroApplicationMessage) =>
+      event.map((m: MicroAppMessage) =>
         neverThrowError(m, worker).then((result: any) => {
           console.log(
             'Received worker response',
@@ -59,7 +59,7 @@ export const useMicroApplication = (
   });
 
   let middleware: Array<any>;
-  switch (microApplicationConfig.eventType) {
+  switch (microAppConfig.eventType) {
     case 'webhook':
       middleware = [
         withMessageProcessing(
@@ -73,29 +73,29 @@ export const useMicroApplication = (
               'account',
               'debugMode',
             ],
-            microApplicationConfig,
+            microAppConfig,
             AWS
           )
         ),
-        ...(microApplicationConfig.hasServiceConfig
+        ...(microAppConfig.hasServiceConfig
           ? [
               withVendorConfig(
                 createTailoredOptions(
                   ['service', 'debugMode'],
-                  microApplicationConfig,
+                  microAppConfig,
                   AWS
                 )
               ),
             ]
           : []),
         withPrivacyScreen(
-          createTailoredOptions(['debugMode'], microApplicationConfig, AWS)
+          createTailoredOptions(['debugMode'], microAppConfig, AWS)
         ),
         ...additionalMiddleware.map((mid) =>
           mid(
             createTailoredOptions(
               ['service', 'eventType', 'isBulk', 'debugMode'],
-              microApplicationConfig,
+              microAppConfig,
               false
             )
           )
@@ -116,37 +116,37 @@ export const useMicroApplication = (
               'account',
               'debugMode',
             ],
-            microApplicationConfig,
+            microAppConfig,
             AWS
           )
         ),
         withContextPrep(
-          createTailoredOptions(['debugMode'], microApplicationConfig, AWS)
+          createTailoredOptions(['debugMode'], microAppConfig, AWS)
         ),
-        ...(microApplicationConfig.hasServiceConfig
+        ...(microAppConfig.hasServiceConfig
           ? [
               withVendorConfig(
                 createTailoredOptions(
                   ['service', 'debugMode'],
-                  microApplicationConfig,
+                  microAppConfig,
                   AWS
                 )
               ),
             ]
           : []),
-        ...(microApplicationConfig.useMads
+        ...(microAppConfig.useMads
           ? [
               withServiceData(
                 createTailoredOptions(
                   ['service', 'region', 'account', 'debugMode'],
-                  microApplicationConfig,
+                  microAppConfig,
                   AWS
                 )
               ),
               withMads(
                 createTailoredOptions(
                   ['service', 'region', 'account', 'debugMode'],
-                  microApplicationConfig,
+                  microAppConfig,
                   AWS
                 )
               ),
@@ -155,31 +155,31 @@ export const useMicroApplication = (
               withServiceData(
                 createTailoredOptions(
                   ['service', 'region', 'account', 'debugMode'],
-                  microApplicationConfig,
+                  microAppConfig,
                   AWS
                 )
               ),
             ]), // eventually swap for Mads as default
         withPrivacyScreen(
-          createTailoredOptions(['debugMode'], microApplicationConfig, AWS)
+          createTailoredOptions(['debugMode'], microAppConfig, AWS)
         ),
         ...additionalMiddleware.map((mid) =>
           mid(
             createTailoredOptions(
               ['service', 'eventType', 'isBulk', 'debugMode'],
-              microApplicationConfig,
+              microAppConfig,
               false
             )
           )
         ),
       ];
 
-      if (microApplicationConfig.useThrottling) {
+      if (microAppConfig.useThrottling) {
         middleware.unshift(
           withThrottling(
             createTailoredOptions(
               ['service', 'isBulk', 'throttleOptions'],
-              microApplicationConfig,
+              microAppConfig,
               AWS
             )
           )

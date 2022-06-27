@@ -3,8 +3,8 @@ import _get from 'lodash/get';
 import _isundefined from 'lodash/isUndefined';
 import _isnull from 'lodash/isNull';
 import {
-  MicroApplicationMessage,
-  HandledMicroApplicationMessage,
+  MicroAppMessage,
+  HandledMicroAppMessage,
   Options,
 } from '../library/sharedTypes';
 import {
@@ -116,25 +116,22 @@ const defaults = {
 
 const createWithMads = (
   opts: Options
-): middy.MiddlewareObj<
-  MicroApplicationMessage[],
-  HandledMicroApplicationMessage[]
-> => {
+): middy.MiddlewareObj<MicroAppMessage[], HandledMicroAppMessage[]> => {
   const options = { ...defaults, ...opts };
   const middlewareName = 'withMads';
   const internalMadsCache = {} as any;
   const { AWS, service } = options;
 
   const before: middy.MiddlewareFn<
-    MicroApplicationMessage[],
-    HandledMicroApplicationMessage[]
+    MicroAppMessage[],
+    HandledMicroAppMessage[]
   > = async (request): Promise<void> => {
     if (options.debugMode) {
       console.log('before', middlewareName);
     }
     const { service, AWS } = options;
     await Promise.all(
-      request.event.map(async (m: MicroApplicationMessage) => {
+      request.event.map(async (m: MicroAppMessage) => {
         const userId: any | undefined = _get(
           m,
           ['msgBody', 'context', 'user', 'userId'],
@@ -259,7 +256,7 @@ const createWithMads = (
   };
 
   const processWorkerResponseMads = async (
-    m: HandledMicroApplicationMessage,
+    m: HandledMicroAppMessage,
     request: middy.Request
   ) => {
     const { msgBody, workerResp } = m;
@@ -419,20 +416,18 @@ const createWithMads = (
     }
   };
 
-  const after: middy.MiddlewareFn<
-    MicroApplicationMessage[],
-    HandledMicroApplicationMessage[]
-  > = async (request): Promise<void> => {
-    if (options.debugMode) {
-      console.log('after', middlewareName);
-    }
-    // set changes to serviceUserData/serviceAccountData
-    if (request.response) {
-      await Promise.all(
-        request.response.map((m) => processWorkerResponseMads(m, request))
-      );
-    }
-  };
+  const after: middy.MiddlewareFn<MicroAppMessage[], HandledMicroAppMessage[]> =
+    async (request): Promise<void> => {
+      if (options.debugMode) {
+        console.log('after', middlewareName);
+      }
+      // set changes to serviceUserData/serviceAccountData
+      if (request.response) {
+        await Promise.all(
+          request.response.map((m) => processWorkerResponseMads(m, request))
+        );
+      }
+    };
 
   return {
     before,

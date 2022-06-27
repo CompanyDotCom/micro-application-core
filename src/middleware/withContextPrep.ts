@@ -1,8 +1,8 @@
 import middy from '@middy/core';
 
 import {
-  HandledMicroApplicationMessage,
-  MicroApplicationMessage,
+  HandledMicroAppMessage,
+  MicroAppMessage,
   Options,
 } from '../library/sharedTypes';
 import { fetchRecordsByQuery } from '../library/dynamo';
@@ -75,15 +75,12 @@ const getCurrentUserData = async (AWS: any, userId: string) => {
 
 const createWithContextPrep = (
   opt: Options
-): middy.MiddlewareObj<
-  [MicroApplicationMessage],
-  [HandledMicroApplicationMessage]
-> => {
+): middy.MiddlewareObj<[MicroAppMessage], [HandledMicroAppMessage]> => {
   const middlewareName = 'withContextPrep';
   const options = { ...defaults, ...opt };
   const before: middy.MiddlewareFn<
-    [MicroApplicationMessage],
-    [HandledMicroApplicationMessage]
+    [MicroAppMessage],
+    [HandledMicroAppMessage]
   > = async (request): Promise<void> => {
     if (options.debugMode) {
       console.log('before', middlewareName);

@@ -1,8 +1,8 @@
 import middy from '@middy/core';
 import _get from 'lodash/get';
 import {
-  MicroApplicationMessage,
-  HandledMicroApplicationMessage,
+  MicroAppMessage,
+  HandledMicroAppMessage,
   Options,
 } from '../library/sharedTypes';
 import {
@@ -20,14 +20,14 @@ import {
 const createWithPrivacyScreen = (
   options: Options
 ): middy.MiddlewareObj<
-  [MicroApplicationMessage] | any,
-  [HandledMicroApplicationMessage] | any
+  [MicroAppMessage] | any,
+  [HandledMicroAppMessage] | any
 > => {
   const middlewareName = 'withPrivacyScreen';
   let requestInternalStash = {} as any;
   const before: middy.MiddlewareFn<
-    [MicroApplicationMessage] | any,
-    [HandledMicroApplicationMessage] | any
+    [MicroAppMessage] | any,
+    [HandledMicroAppMessage] | any
   > = async (request): Promise<void> => {
     if (options.debugMode) {
       console.log('before', middlewareName);
@@ -37,7 +37,7 @@ const createWithPrivacyScreen = (
     requestInternalStash = Object.assign({}, request.internal);
 
     request.event = await Promise.all(
-      request.event.map(async (m: MicroApplicationMessage) => {
+      request.event.map(async (m: MicroAppMessage) => {
         const userId: string = _get(
           m,
           ['msgBody', 'context', 'user', 'userId'],
@@ -106,8 +106,8 @@ const createWithPrivacyScreen = (
   };
 
   const after: middy.MiddlewareFn<
-    [MicroApplicationMessage] | any,
-    [HandledMicroApplicationMessage] | any
+    [MicroAppMessage] | any,
+    [HandledMicroAppMessage] | any
   > = async (request): Promise<void> => {
     if (options.debugMode) {
       console.log('after', middlewareName);
