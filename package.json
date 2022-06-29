@@ -1,7 +1,7 @@
 {
   "name": "@companydotcom/micro-application-core",
   "version": "2.0.7",
-  "description": "Company.com Micro Application core library",
+  "description": "Company.com MicroApp core library",
   "main": "dist/index.js",
   "scripts": {
     "build": "webpack",

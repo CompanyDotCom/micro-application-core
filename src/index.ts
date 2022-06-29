@@ -38,7 +38,7 @@ export const useMicroApp = (
   worker: (params: any) => any,
   additionalMiddleware: [(opt: Options) => middy.MiddlewareObj]
 ) => {
-  console.log('Preparing Micro Application Handler');
+  console.log('Preparing MicroApp Handler');
   const handler = middy(async (event) => {
     console.log('Delegating processed messages to worker:');
     return Promise.all(

@@ -1,8 +1,8 @@
 # micro-application-core
 
-Company Micro Application Core library
+Company MicroApp Core library
 This GIT repo is only for comsumption and edit for members belonging to company.com
-Use the Company Micro Application Generator repo instead for actual usage.
+Use the Company MicroApp Generator repo instead for actual usage.
 
 For company.com developers:
 Do 'npm install' and then 'npm run build' to create the distribution file

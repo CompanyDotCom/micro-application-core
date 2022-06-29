@@ -22,7 +22,7 @@ const coreSettings = {
 //   AWS,
 //   { ...sharedMicroAppConfig, isBulk: false, eventType: 'fetch' },
 //   fMsgHandler,
-//   determineMiddleware(microAppMiddleware, 'fetch', false),
+//   determineMiddleware(microApplicationMiddleware, 'fetch', false),
 // ).then((handler) => {
 //   console.log(event);
 //   console.log(handler);
