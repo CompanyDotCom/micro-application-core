@@ -1,6 +1,6 @@
 {
   "name": "@companydotcom/micro-application-core",
-  "version": "2.0.17",
+  "version": "2.0.18-alpha.0",
   "description": "Company.com MicroApp core library",
   "main": "dist/index.js",
   "scripts": {
