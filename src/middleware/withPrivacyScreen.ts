@@ -38,6 +38,7 @@ const createWithPrivacyScreen = (
 
     request.event = await Promise.all(
       request.event.map(async (m: MicroAppMessage) => {
+        console.log('Micro Application Message: ', m);
         const userId: string = _get(
           m,
           ['msgBody', 'context', 'user', 'userId'],
